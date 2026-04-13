@@ -1,0 +1,2 @@
+https://www.vaadata.com/blog/what-is-buffer-overflow-attacks-types-and-security-tips/
+https://www.geeksforgeeks.org/cpp/buffer-overflow-attack-with-example/
