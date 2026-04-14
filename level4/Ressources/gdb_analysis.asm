@@ -308,3 +308,13 @@ Idea
 
 * Inject the target address into the input.
 * Use %n to write controlled values.
+
+Execution Flow
+
+1. main calls n.
+2. n reads input.
+3. n calls p(buffer).
+4. p executes printf(buffer).
+5. Memory can be modified.
+6. Back in n, condition becomes true.
+7. system() is executed.
