@@ -152,3 +152,40 @@ Restore stack.
 Jump to return address.
 
 ---
+
+Key Points
+
+Vulnerability:
+gets() allows unlimited input → buffer overflow.
+
+Offset:
+Buffer = 76 bytes
+Saved EBP = 4 bytes
+Total = 80 bytes to reach return address.
+
+Protection:
+Blocks stack addresses (0xbxxxxxxx).
+
+Bypass Idea:
+Use heap or libc address (not stack).
+
+Execution Flow:
+
+input → gets
+→ overflow
+→ overwrite return address
+→ check (not stack)
+→ strdup copies to heap
+→ ret
+→ jump to controlled address
+
+---
+
+Final Summary
+
+The program contains a buffer overflow vulnerability.
+It prevents execution from the stack but allows redirection
+to other memory regions like heap or libc.
+Control of the return address allows execution flow hijacking.
+
+---
