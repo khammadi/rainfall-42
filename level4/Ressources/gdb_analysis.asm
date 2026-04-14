@@ -318,3 +318,14 @@ Execution Flow
 5. Memory can be modified.
 6. Back in n, condition becomes true.
 7. system() is executed.
+
+---
+
+# Final Conclusion
+
+* The program contains a format string vulnerability in function p.
+* This allows arbitrary memory read and write.
+* An attacker can control program execution.
+* The final goal is to trigger system().
+
+---
