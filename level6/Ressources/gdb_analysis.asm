@@ -131,3 +131,17 @@ ret
 Return to the caller
 
 ---------------
+
+Summary:
+
+The program uses strcpy without checking the input size.
+This allows a buffer overflow.
+
+A function pointer is stored in nearby memory.
+The overflow can overwrite this pointer.
+
+The program later calls this pointer.
+If overwritten, it can redirect execution to another function such as n, which calls system.
+This can be exploited to execute arbitrary commands and obtain the flag.
+
+---------------
