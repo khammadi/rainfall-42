@@ -1,5 +1,13 @@
 #include <stdio.h>
 #include <stdlib.h>
+
+int m = 0;
+
+void p(char *buffer)
+{
+  printf(buffer);
+}
+
 void n(void)
 {
   char buffer[0x200];
