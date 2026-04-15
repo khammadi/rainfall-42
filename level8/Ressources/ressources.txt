@@ -1,1 +1,2 @@
 https://www.eecg.utoronto.ca/~amza/www.mindsec.com/files/x86regs.html
+https://medium.com/@sharonlin/useful-registers-in-assembly-d9a9da22cdd9
