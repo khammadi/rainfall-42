@@ -81,3 +81,28 @@ ret
 Return from main
 
 ---------------
+
+Function m:
+
+push ebp
+Save the old base pointer
+
+mov esp, ebp
+Create a new stack frame
+
+sub esp, 0x18
+Allocate 24 bytes for local variables
+
+movl 0x80485d1, (esp)
+Put the address of a string into the stack (argument for puts)
+
+call puts
+Call puts to print the string
+
+leave
+Restore the previous stack frame
+
+ret
+Return to the caller
+
+---------------
