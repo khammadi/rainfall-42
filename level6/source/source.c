@@ -3,6 +3,12 @@
 #include <stdio.h>
 
 
+
+void m(void)
+{
+  puts("Nope");
+}
+
 int main(int argc, char *argv[])
 {
   char *str = malloc(0x40); 
