@@ -1,105 +1,193 @@
-gdb_analysis.asm
+BONUS0 GDB ANALYSIS REPORT
 
-file purpose
-analysis of bonus0 binary execution based on gdb disassembly and runtime crash
+SECTION 1 PROGRAM START
 
-main function analysis
+command
+su bonus0
 
-step 1 function prologue
-push ebp
-save previous base pointer on stack to maintain stack frame chain
+meaning
+switch user to bonus0 account
 
-mov esp ebp
-set current stack pointer as new base pointer for function stack frame
+result
+program is executed under bonus0 privileges
 
-and esp fffffff0
-align stack to 16 byte boundary for performance and calling convention compliance
+SECTION 2 DEBUGGER START
 
-sub 0x40 esp
-allocate 64 bytes of local stack memory for variables and buffers
+command
+gdb ./bonus0
 
-step 2 prepare argument for function pp
-lea 0x16 esp eax
-compute address of local buffer located at esp plus 0x16 offset and store it in eax
+meaning
+launch GNU debugger on binary bonus0
 
-mov eax esp
-place that buffer address as first argument on stack for next function call
+result
+binary loaded into gdb
+architecture detected i386 linux
 
-call pp
-call function pp with pointer to local buffer
-this is likely where input processing or buffer filling happens
+SECTION 3 MAIN FUNCTION DISASSEMBLY
 
-step 3 second use of same buffer
-lea 0x16 esp eax
-recompute same buffer address
+command
+disas main
 
-mov eax esp
-push buffer address again as argument
+meaning
+show assembly instructions of main function
 
-call puts
-print content of buffer to stdout
+important instructions
 
-step 4 function exit
-mov 0x0 eax
-set return value of main to 0
+0x080485a4 push ebp
+save previous stack frame
 
-leave
+0x080485a5 mov esp ebp
+create new stack frame
+
+0x080485a7 and esp 0xfffffff0
+align stack
+
+0x080485aa sub esp 0x40
+allocate 64 bytes stack space
+
+0x080485ad lea eax esp 0x16
+load buffer address
+
+0x080485b1 mov eax esp
+pass buffer pointer as argument
+
+0x080485b4 call pp
+call vulnerable function pp
+
+0x080485b9 lea eax esp 0x16
+reload same buffer
+
+0x080485bd mov eax esp
+prepare argument for puts
+
+0x080485c0 call puts
+print buffer content
+
+0x080485c5 mov eax 0
+set return value
+
+0x080485ca leave
 restore stack frame
-equivalent to mov ebp esp and pop ebp
 
-ret
-return to caller
+0x080485cb ret
+return from main
 
-runtime behavior analysis
+analysis conclusion
+buffer is located on stack
+same buffer is used for input and output
+function pp is main vulnerability entry point
 
-input phase
-program takes input that is processed inside function pp
-likely multiple reads or concatenation into adjacent buffers
+SECTION 4 PROGRAM EXECUTION
 
-overflow behavior
-user input is large and not properly bounded
-data overwrites adjacent stack memory
+command
+run
 
-crash observation
+input line 1
+7846213986666666666666421111111111111111111111111111111
+
+input line 2
+7844451121954535613278462139866666666666 followed by garbage characters
+
+result
+program crashes
+
+SECTION 5 CRASH ANALYSIS
 
 signal received
-segmentation fault
+SIGSEGV segmentation fault
 
-eip value
+EIP value
 0x36363636
 
-interpretation
-instruction pointer overwritten by ascii value 6 6 6 6
-means controlled execution flow via buffer overflow
+meaning
+instruction pointer overwritten with ascii 6 6 6 6
 
-stack state
+conclusion
+control of execution flow achieved via buffer overflow
 
-esp points to overwritten data containing repeated 0x36 bytes
-stack corrupted with user controlled input
+SECTION 6 REGISTER STATE
 
-ebp value
-0x38393331
-also overwritten with ascii characters indicating further corruption
+eax
+0 normal return state
 
-x20 esp dump
-shows repeated 0x36 patterns confirming payload overflow
+ecx
+ffffffff invalid counter value
 
-root cause
+edx
+b7fd28b8 libc memory reference
 
-no proper bounds checking in pp function
-stack buffer is written beyond allocated size
-adjacent memory including return address is overwritten
+ebx
+b7fd0ff4 libc base related address
 
-exploit conclusion
+esp
+bffff730 stack pointer pointing to controlled buffer
 
-control achieved over instruction pointer
-eip overwritten with user input
-goal is to redirect execution to shellcode or system function
+ebp
+38393331 corrupted saved frame pointer
 
-typical attack strategy
+eip
+36363636 corrupted instruction pointer
 
-place shellcode in environment or buffer
-overflow input until return address
-overwrite return address with controlled memory address pointing to shellcode
+conclusion
+stack memory fully controlled by input data
 
-end of analysis
+SECTION 7 STACK DUMP
+
+command
+x 20x esp
+
+stack content
+
+0xbffff730 36363636 overwritten instruction
+0xbffff734 f4363636 corrupted data
+0xbffff738 b7fd0f libc pointer
+0xbffff740 b7fdc858 libc related address
+0xbffff750 stack metadata
+0xbffff760 mixed heap and stack artifacts
+0xbffff770 null padded memory
+0xbffff77c program control values
+
+analysis
+stack is overwritten sequentially
+buffer overflow reached return address region
+
+SECTION 8 GETENV HELPER TOOL
+
+command
+cat getenv.c
+
+purpose
+create program to read environment variable address
+
+code behavior
+uses getenv function
+prints memory address of given variable
+
+usage
+used to locate shellcode in environment
+
+SECTION 9 EXPLOIT CONTEXT
+
+objective
+redirect execution flow
+
+method
+overflow stack buffer
+overwrite return address
+jump to shellcode or libc function
+
+current state
+crash confirmed
+EIP control confirmed
+
+next step
+calculate correct return address offset
+inject shellcode or libc system call
+
+SECTION 10 FINAL RESULT
+
+flag obtained
+cd1f77a585965341c37a1774a1d1686326e1fc53aaa5459c840409d4d06523c9
+
+meaning
+successful privilege escalation from bonus0
