@@ -3,3 +3,4 @@ https://www.geeksforgeeks.org/linux-unix/readelf-command-in-linux-with-examples/
 https://github.com/nationalsecurityagency/ghidra
 https://sourceware.org/gdb/
 https://www.malekal.com/suid-sgid-sticky-bit-linux/#Qursquoest-ce_que_le_SUID
+https://www.tutorialpedia.org/blog/what-are-the-esp-and-the-ebp-registers/
