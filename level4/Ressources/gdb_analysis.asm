@@ -307,7 +307,7 @@ So that it becomes:
 Idea
 
 * Inject the target address into the input.
-* Use %n to write controlled values.
+* Use %d to write controlled values.
 
 Execution Flow
 
