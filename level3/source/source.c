@@ -1,21 +1,23 @@
-#include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
 
-void	v()
+int		m = 0;
+
+int		v(void)
 {
-	int	m = 0;
 	char	buffer[512];
-	
-	fgets(buffer, 512, STDIN);
+
+	fgets(buffer, 512, stdin);
 	printf(buffer);
-	if (m != 64)
-		return ;
-	write(1, "Wait what?!\n", 12);
-	system("bin/sh");
+	if (m == 64)
+	{
+		fwrite("Wait what?!\n", 12, 1, stdout);
+		system("/bin/sh");
+	}
+	return (0);
 }
 
-int	main()
+int		main(void)
 {
 	v();
 	return (0);
