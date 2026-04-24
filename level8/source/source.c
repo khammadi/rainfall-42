@@ -1,41 +1,36 @@
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
+#include <stdlib.h>
 
-uint32_t *service;
-uint32_t **auth;
+char	*auth = NULL;
+char	*service = NULL;
 
-int main(int argc, char *argv[])
+int		main(void)
 {
-  int8_t buffer[0x80];
-  uint32_t temp;
-
-  printf("%p, %p \n", service, auth);
-  if (!(fgets(buffer, 0x80, stdin)))
-    return 0;
-  
-  while (1) {
-    if (strncmp("auth ", buffer, 5)) {
-      *auth = malloc(4);
-      **auth = 0;
-
-      temp = 0xffffffff;
-      if (strlen(auth) <= 30) {
-        strcpy(*auth, buffer + 5);
-      }
-    }
-    if (strncmp("reset", buffer, 5)) {
-      free(*auth);
-    }
-    if (strncmp("service", buffer, 6)) {
-      strdup(buffer + 7);
-    }
-    if (strncmp("login", buffer, 5)) {
-      if (auth[0x20]) {
-        system("/bin/sh");
-      } else {
-        fwrite("PasswordL\n", 1, 0xa, stdout);
-      }
-    }
-  }
+	char	buffer[128];
+	
+	while (1)
+	{
+		printf("%p, %p\n", auth, service);
+		if (fgets(buffer, 128, stdin) == 0)
+			break;
+		if (strncmp(buffer, "auth ", 5) == 0)
+		{
+			auth = malloc(4);
+			auth[0] = 0;
+			if (strlen(buffer + 5) <= 30)
+				strcpy(auth, buffer + 5);
+		}
+		if (strncmp(buffer, "reset", 5) == 0)
+			free(auth);
+		if (strncmp(buffer, "service", 6) == 0)
+			service = strdup(buffer + 7);
+		if (strncmp(buffer, "login", 5) == 0)
+		{
+			if (auth[32] != 0)
+				system("/bin/sh");
+			else
+				fwrite("Password:\n", 10, 1, stdout);
+		}
+	}
 }
