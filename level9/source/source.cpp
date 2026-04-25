@@ -26,3 +26,5 @@ int main(int ac, char **av) {
     obj2._str();
     return (0);
 }
+
+// \x08\x04\xa0\x28
