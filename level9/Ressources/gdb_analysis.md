@@ -1,189 +1,335 @@
----------------
+# GDB Analysis – level9 (C++ Object Overflow + Virtual Function Hijacking)
 
-Function main:
+This C++ program allocates two heap objects, uses unsafe input handling to overflow the first object, and exploits a corrupted vtable pointer in the second object to hijack virtual function calls.
 
-push ebp
-Save old base pointer
+---
 
-mov esp, ebp
-Create new stack frame
+## 1. Function: main
 
-push ebx
-Save ebx register
+### Stack Setup and Argument Check
 
-and esp, 0xfffffff0
-Align stack to 16 bytes
+```asm
+push %ebp
+mov %esp, %ebp
+push %ebx
+and $0xfffffff0, %esp
+sub $0x20, %esp
+                  ; Save registers and allocate 32 bytes
 
-sub esp, 0x20
-Allocate 32 bytes on stack
+cmpl $0x1, 0x8(%ebp)
+                  ; Compare argc with 1
 
----------------
+jg continue       ; If argc > 1, continue
 
-Argument check:
+movl $0x1, (%esp)
+call _exit        ; Exit program if no argument
+```
 
-cmpl $0x1, 0x8(ebp)
-Compare argc with 1
+### First Object Creation
 
-jg continue
-If argc > 1, continue
+```asm
+movl $0x6c, (%esp)
+call operator new ; Allocate 108 bytes for object 1
+                  ; (0x6c = 108 bytes)
 
-movl $0x1, (esp)
-Prepare exit(1)
+mov %eax, %ebx
+                  ; Store pointer in ebx
 
-call _exit
-Exit program if no argument
+movl $0x5, 0x4(%esp)
+                  ; Prepare constructor argument (5)
 
----------------
+mov %ebx, (%esp)
+call N::N(int)    ; Construct first object with value 5
 
-First object creation:
+mov %ebx, 0x1c(%esp)
+                  ; Store obj1 pointer on stack
+```
 
-movl $0x6c, (esp)
-Prepare allocation size (108 bytes)
+**Equivalent C++ code:**
+```cpp
+N *obj1 = new N(5);  // 108-byte object
+```
 
-call operator new
-Allocate memory for object 1
+### Second Object Creation
 
-mov eax, ebx
-Store pointer in ebx
+```asm
+movl $0x6c, (%esp)
+call operator new ; Allocate 108 bytes for object 2
 
-movl $0x5, 0x4(esp)
-Prepare constructor argument (5)
+mov %eax, %ebx
+                  ; Store pointer
 
-mov ebx, (esp)
-Set object pointer
+movl $0x6, 0x4(%esp)
+                  ; Prepare constructor argument (6)
 
-call N::N(int)
-Construct first object with value 5
+mov %ebx, (%esp)
+call N::N(int)    ; Construct second object with value 6
 
-mov ebx, 0x1c(esp)
-Store obj1 on stack
+mov %ebx, 0x18(%esp)
+                  ; Store obj2 pointer on stack
+```
 
----------------
+**Equivalent C++ code:**
+```cpp
+N *obj2 = new N(6);  // 108-byte object
+```
 
-Second object creation:
+### Prepare Object References
 
-movl $0x6c, (esp)
-Prepare allocation size (108 bytes)
+```asm
+mov 0x1c(%esp), %eax
+mov %eax, 0x14(%esp)
+                  ; Store obj1 reference
 
-call operator new
-Allocate memory for object 2
+mov 0x18(%esp), %eax
+mov %eax, 0x10(%esp)
+                  ; Store obj2 reference
+```
 
-mov eax, ebx
-Store pointer
+### Get User Input
 
-movl $0x6, 0x4(esp)
-Prepare constructor argument (6)
+```asm
+mov 0xc(%ebp), %eax
+                  ; Load argv
 
-mov ebx, (esp)
-Set object pointer
+add $0x4, %eax
+                  ; Move to argv[1]
 
-call N::N(int)
-Construct second object with value 6
+mov (%eax), %eax
+                  ; Load user input string
 
-mov ebx, 0x18(esp)
-Store obj2 on stack
+mov %eax, 0x4(%esp)
+                  ; Set as argument
+```
 
----------------
+### Call setAnnotation (Vulnerable)
 
-Prepare objects:
+```asm
+mov 0x14(%esp), %eax
+                  ; Load obj1
 
-mov 0x1c(esp), eax
-Load obj1
+mov %eax, (%esp)
+                  ; Set this pointer
 
-mov eax, 0x14(esp)
-Store obj1
+call N::setAnnotation(char*)
+                  ; Call method with user input
+```
 
-mov 0x18(esp), eax
-Load obj2
+> ⚠️ **Critical Vulnerability: Buffer Overflow in setAnnotation()**
+>
+> ```cpp
+> void N::setAnnotation(char *input)
+> {
+>     strcpy(annotation, input);  // DANGEROUS! No size check
+> }
+> ```
+>
+> - Object is 108 bytes
+> - Buffer for annotation is likely 40-60 bytes
+> - User input (argv[1]) can be unlimited length
+> - **Overflow extends into obj2 (adjacent in heap memory)**
 
-mov eax, 0x10(esp)
-Store obj2
+---
 
----------------
+## 2. C++ Object Structure
 
-Get user input:
+### N Object Layout
 
-mov 0xc(ebp), eax
-Load argv
+```
+Object 1 (108 bytes):
++------------------+
+| vtable pointer   |  ← First 4 bytes
+| (vptr)           |
++------------------+
+| member variables |
++------------------+
+| annotation buffer| ← strcpy writes here
+| (40-60 bytes)    |    Can overflow!
++------------------+
 
-add eax, 0x4
-Move to argv[1]
+Object 2 (108 bytes):
++------------------+
+| vtable pointer   |  ← ⚠️ Can be overwritten!
+| (vptr)           |    This is YOUR ATTACK TARGET
++------------------+
+| member variables |
++------------------+
+| ...              |
++------------------+
+```
 
-mov (eax), eax
-Load user input string
+---
 
-mov eax, 0x4(esp)
-Set argument for function
+## 3. Virtual Function Call (Exploited)
 
----------------
+### Call Virtual Function
 
-Call setAnnotation:
+```asm
+mov 0x10(%esp), %eax
+                  ; Load obj2
 
-mov 0x14(esp), eax
-Load obj1
+mov (%eax), %eax
+                  ; Load vtable pointer from obj2
+                  ; ⚠️ This may be corrupted!
 
-mov eax, (esp)
-Set this pointer
+mov (%eax), %edx
+                  ; Load first function pointer from vtable
 
-acll N::setAnnotation(char*)
-Call method with user input
+mov 0x14(%esp), %eax
+                  ; Load obj1
 
----------------
+mov %eax, 0x4(%esp)
+                  ; Set argument
 
-Virtual function call:
+mov 0x10(%esp), %eax
+                  ; Load obj2
 
-mov 0x10(esp), eax
-Load obj2
+mov %eax, (%esp)
+                  ; Set this pointer
 
-mov (eax), eax
-Load vtable pointer
+call *%edx        ; Call virtual function
+                  ; ⚠️ Calls attacker-controlled function!
+```
 
-mov (eax), edx
-Load first function pointer from vtable
+> ⚠️ **Vulnerability: Virtual Function Hijacking**
+>
+> - Program reads vtable pointer from obj2: `vptr = obj2->vtable`
+> - Calls first virtual function: `(*vtable[0])(obj2, obj1)`
+> - If vtable was corrupted by overflow, points to **attacker code**
+> - **Arbitrary code execution achieved!**
 
-mov 0x14(esp), eax
-Load obj1
+### Function End
 
-mov eax, 0x4(esp)
-Set argument
-
-mov 0x10(esp), eax
-Load obj2
-
-mov eax, (esp)
-Set this pointer
-
-call *edx
-Call virtual function
-
----------------
-
-Function end:
-
-mov -0x4(ebp), ebx
-Restore ebx
+```asm
+mov -0x4(%ebp), %ebx
+                  ; Restore ebx
 
 leave
-Restore stack frame
+ret               ; Return from main
+```
 
-ret
-Return
+---
 
----------------
+## Exploitation Strategy
 
-Summary:
+### Heap Layout Control
 
-Two objects are allocated on the heap (108 bytes each).
-The first object receives user input via setAnnotation.
-This function likely copies data without bounds checking.
+```
+Heap Memory:
++-----------+
+| obj1      |  ← 108 bytes
+|           |
+| [overflow zone - attacker controls]
+|           |
++-----------+
+| obj2      |  ← 108 bytes, first 4 bytes = vtable pointer
+|[vptr]     |  ← ⚠️ Attacker overwrites this!
+|           |
++-----------+
+```
 
-Because of this, a buffer overflow can occur in the first object.
-The overflow can reach the second object in memory.
+### Attack Steps
 
-The second object contains a vtable pointer at its beginning.
-By overflowing, the attacker can overwrite this vtable pointer.
+1. **Craft malicious input**
+   - Create input string longer than annotation buffer (~60+ bytes)
+   - Contains: padding + new vtable pointer address
 
-Later, the program calls a virtual function using this pointer.
-If overwritten, the attacker controls which function is executed.
+2. **Overflow annotation buffer**
+   - `setAnnotation()` copies entire input with `strcpy()`
+   - Overflow extends past obj1 boundary
+   - **Overwrites obj2's vtable pointer** in adjacent heap memory
 
----------------
+3. **Set vtable to attacker address**
+   - New vtable pointer points to memory under attacker control
+   - Contains addresses of malicious functions
+
+4. **Trigger virtual function call**
+   - Program loads corrupted vtable pointer
+   - Reads function pointer from attacker's vtable
+   - **Calls attacker's function**
+   - **Arbitrary code execution!**
+
+### Attack Flow
+
+```
+Input: "A"*60 + <attacker_vtable_address>
+  ↓
+setAnnotation(input)
+  ↓
+strcpy copies without bounds check
+  ↓
+Overflow beyond obj1 boundary
+  ↓
+Overwrites obj2's vtable pointer
+  ↓
+Virtual function call:
+  vptr = obj2->vtable (now points to attacker memory)
+  function = (*vptr)[0] (reads attacker function)
+  ↓
+Call attacker's function
+  ↓
+Arbitrary code execution
+  ↓
+Shell access or privilege escalation
+```
+
+---
+
+## C++ Specifics
+
+### Virtual Function Mechanism
+
+In C++, virtual functions work through a **vtable (virtual method table)**:
+
+```cpp
+class N {
+public:
+    virtual void method1() { ... }
+    virtual void method2() { ... }
+};
+
+// At runtime:
+// obj->method1() is translated to:
+// (*obj->vtable[0])(obj)
+```
+
+### Vulnerability Exploitation
+
+By overwriting the **vtable pointer**, attacker can:
+- Make object point to **any memory address**
+- This "vtable" can contain **any function pointers**
+- **Arbitrary function calls** become possible
+- **Total code execution control**
+
+---
+
+## Summary
+
+**Critical vulnerabilities:**
+
+1. **Buffer Overflow in setAnnotation()**
+   - Uses `strcpy()` without size validation
+   - Input can be unlimited length
+   - Overflows into adjacent heap memory
+
+2. **Adjacent Object Memory Corruption**
+   - obj1 and obj2 allocated sequentially on heap
+   - Overflow from obj1 corrupts obj2's data
+   - **Specifically overwrites vtable pointer**
+
+3. **Virtual Function Hijacking**
+   - Program calls virtual function via corrupted vtable
+   - Vtable pointer points to attacker-controlled memory
+   - Function pointers can redirect to arbitrary code
+
+4. **Arbitrary Code Execution**
+   - Attacker creates fake vtable with function pointers
+   - Program reads from fake vtable
+   - **Calls any function attacker chooses**
+   - Privilege escalation if running as root
+
+**Exploitation requires:**
+- Understanding C++ object layout and vtables
+- Crafting overflow payload with target vtable address
+- Creating fake vtable with malicious function pointers
+- Setting up ROP gadgets or shellcode
