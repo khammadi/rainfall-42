@@ -4,7 +4,29 @@
 
 This repository contains comprehensive solutions and analysis for the **Rainfall** project: an introduction to exploiting ELF-like binaries on **i386** architecture.
 
-## 🎯 Project Overview
+## Quick Navigation
+
+### Main Levels
+- [level0](level0/Ressources/gdb_analysis.md) | [Source](level0/source/source.c)
+- [level1](level1/Ressources/gdb_analysis.md) | [Source](level1/source/source.c)
+- [level2](level2/Ressources/gdb_analysis.md) | [Source](level2/source/source.c)
+- [level3](level3/Ressources/gdb_analysis.md) | [Source](level3/source/source.c)
+- [level4](level4/Ressources/gdb_analysis.md) | [Source](level4/source/source.c)
+- [level5](level5/Ressources/gdb_analysis.md) | [Source](level5/source/source.c)
+- [level6](level6/Ressources/gdb_analysis.md) | [Source](level6/source/source.c)
+- [level7](level7/Ressources/gdb_analysis.md) | [Source](level7/source/source.c)
+- [level8](level8/Ressources/gdb_analysis.md) | [Source](level8/source/source.c)
+- [level9](level9/Ressources/gdb_analysis.md) | [Source](level9/source/source.cpp)
+
+### Bonus Levels
+- [bonus0](bonu0/Ressources/gdb_analysis.md) | [Source](bonu0/source/source.c)
+- [bonus1](bonus1/Ressources/gdb_analysis.md) | [Source](bonus1/source/source.c)
+- [bonus2](bonus2/Ressources/gdb_analysis.md) | [Source](bonus2/source/source.c)
+- [bonus3](bonus3/Ressources/gdb_analysis.md) | [Source](bonus3/source/source.c)
+
+---
+
+## Project Overview
 
 ### Goal
 
@@ -33,7 +55,7 @@ This project demonstrates **10 major vulnerability classes**:
 
 ---
 
-## 🌍 Environment & Setup
+## Environment & Setup
 
 ### Prerequisites
 
@@ -73,7 +95,7 @@ ls -la level0/
 
 ---
 
-## 📂 Repository Structure
+## Repository Structure
 
 ### Mandatory Levels (10 required)
 
@@ -120,7 +142,7 @@ levelX/
 
 ---
 
-## 🔍 Detailed Level Guides
+## Detailed Level Guides
 
 ### Level 0: Input Validation Challenge
 - **Vulnerability:** Insufficient argument validation
@@ -184,7 +206,7 @@ levelX/
 
 ---
 
-## 🎓 Bonus Challenges
+## Bonus Challenges
 
 ### Bonus 0: Stack Overflow Pattern Finding
 - **Difficulty:** Medium
@@ -212,7 +234,7 @@ levelX/
 
 ---
 
-## 📖 Usage & Workflow
+## Usage & Workflow
 
 ### For Each Level
 
@@ -257,7 +279,7 @@ levelX~$ cat /home/levelX+1/.pass > /tmp/flag
 
 ---
 
-## 🛠️ Key Tools & Resources
+## Key Tools & Resources
 
 ### Debugging
 - **GDB** - GNU Debugger with TUI mode
@@ -276,7 +298,7 @@ levelX~$ cat /home/levelX+1/.pass > /tmp/flag
 
 ---
 
-## 🧠 Core Concepts Learned
+## Core Concepts Learned
 
 ### 1. Memory Layout
 - Stack (LIFO, local variables, return addresses)
@@ -306,7 +328,7 @@ levelX~$ cat /home/levelX+1/.pass > /tmp/flag
 
 ---
 
-## 📋 Project Constraints & Rules
+## Project Constraints & Rules
 
 ### From Assignment (Strictly Enforced)
 
@@ -331,7 +353,7 @@ levelX~$ cat /home/levelX+1/.pass > /tmp/flag
 
 ---
 
-## 🎯 Learning Objectives
+## Learning Objectives
 
 By completing this project, you will understand:
 
@@ -361,7 +383,7 @@ By completing this project, you will understand:
 
 ---
 
-## 📊 Completion Status
+## Completion Status
 
 | Level | Status | Vulnerability | GDB Analysis |
 |-------|--------|-----------------|--------------|
@@ -384,7 +406,7 @@ By completing this project, you will understand:
 
 ---
 
-## 🤝 Contributing & Feedback
+## Contributing & Feedback
 
 Have improvements, corrections, or additional analysis?
 
@@ -395,7 +417,7 @@ Have improvements, corrections, or additional analysis?
 
 ---
 
-## ⚖️ License
+## License
 
 Educational purposes only. Use responsibly and legally only for:
 - Learning and skill development
@@ -404,7 +426,7 @@ Educational purposes only. Use responsibly and legally only for:
 
 ---
 
-## 📚 Additional References
+## Additional References
 
 ### Recommended Reading
 - "The Shellcoder's Handbook" - Anderson, Erickson, Prozinski, Singh
@@ -420,7 +442,7 @@ Educational purposes only. Use responsibly and legally only for:
 
 ---
 
-## 👤 Author
+## Author
 
 **Repository Owner:** khammadi  
 **Project:** 42 School - Rainfall Challenge  
@@ -428,19 +450,6 @@ Educational purposes only. Use responsibly and legally only for:
 
 ---
 
-## 🔗 Quick Navigation
 
-- [level0 Analysis](level0/Ressources/gdb_analysis.md) | [Source](level0/source/source.c)
-- [level1 Analysis](level1/Ressources/gdb_analysis.md) | [Source](level1/source/source.c)
-- [level2 Analysis](level2/Ressources/gdb_analysis.md) | [Source](level2/source/source.c)
-- [level3 Analysis](level3/Ressources/gdb_analysis.md) | [Source](level3/source/source.c)
-- [level4 Analysis](level4/Ressources/gdb_analysis.md) | [Source](level4/source/source.c)
-- [level5 Analysis](level5/Ressources/gdb_analysis.md) | [Source](level5/source/source.c)
-- [level6 Analysis](level6/Ressources/gdb_analysis.md) | [Source](level6/source/source.c)
-- [level7 Analysis](level7/Ressources/gdb_analysis.md) | [Source](level7/source/source.c)
-- [level8 Analysis](level8/Ressources/gdb_analysis.md) | [Source](level8/source/source.c)
-- [level9 Analysis](level9/Ressources/gdb_analysis.md) | [Source](level9/source/source.cpp)
-- [bonus0 Analysis](bonu0/Ressources/gdb_analysis.md) | [Source](bonu0/source/source.c)
-- [bonus1 Analysis](bonus1/Ressources/gdb_analysis.md) | [Source](bonus1/source/source.c)
-- [bonus2 Analysis](bonus2/Ressources/gdb_analysis.md) | [Source](bonus2/source/source.c)
-- [bonus3 Analysis](bonus3/Ressources/gdb_analysis.md) | [Source](bonus3/source/source.c)
+
+
