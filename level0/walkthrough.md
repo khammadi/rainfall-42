@@ -70,7 +70,7 @@ Contents of `level1/.pass` (next-level password):
 ## Notes / Tips
 
 - The binary does a simple numeric check (`atoi(argv[1]) == 423`). No exploitation is required for this level.
-- Tools: `gdb`, `objdump`, and `strings` are useful to locate magic constants in small CTF binaries.
+- Tools: `gdb` & `objdump`are useful to locate magic constants in small CTF binaries.
 
 ## Next steps
 
