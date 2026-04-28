@@ -114,7 +114,7 @@ So:
 
 means:
 
-👉 "Write the number of printed characters into the address stored in the 4th stack argument"
+"Write the number of printed characters into the address stored in the 4th stack argument"
 
 ---
 
