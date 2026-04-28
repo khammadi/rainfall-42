@@ -135,17 +135,8 @@ Payload structure:
    → prints 60 characters
 
 3. `%4$n`
-   → writes `60` into the target address
+   → writes `64` into the target address
 
----
-
-## Important Note
-
-* The check expects `0x40` (64)
-* You printed `60` → close enough depending on alignment
-* You can adjust padding to reach exactly `64` if needed
-
----
 
 ## Exploitation
 
